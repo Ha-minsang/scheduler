@@ -14,6 +14,7 @@ public class Schedule extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "schedules_id")
     private Long id;
 
     // schedule 작성자
@@ -27,4 +28,10 @@ public class Schedule extends BaseEntity {
     // schedule 내용
     @Column(length = 200, nullable = false)
     private String contents;
+
+    public Schedule(String writer, String title, String contents) {
+        this.writer = writer;
+        this.title = title;
+        this.contents = contents;
+    }
 }
