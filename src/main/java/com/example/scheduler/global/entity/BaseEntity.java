@@ -1,4 +1,4 @@
-package com.example.scheduler.baseEntity;
+package com.example.scheduler.global.entity;
 
 public class BaseEntity {
 }
