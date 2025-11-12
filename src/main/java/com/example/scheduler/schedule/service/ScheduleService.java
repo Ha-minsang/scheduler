@@ -103,6 +103,13 @@ public class ScheduleService {
         );
     }
 
+    // DELETE schedule 삭제
+    @Transactional
+    public void deleteSchedule(Long scheduleId) {
+        Schedule schedule = getScheduleById(scheduleId);
+        scheduleRepository.delete(schedule);
+    }
+
     // scheduleID가 일치하는 일정이 없으면 예외 처리
     private Schedule getScheduleById(Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
