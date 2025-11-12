@@ -1,8 +1,6 @@
 package com.example.scheduler.schedule.controller;
 
-import com.example.scheduler.schedule.dto.ScheduleCreateRequest;
-import com.example.scheduler.schedule.dto.ScheduleCreateResponse;
-import com.example.scheduler.schedule.dto.ScheduleGetResponse;
+import com.example.scheduler.schedule.dto.*;
 import com.example.scheduler.schedule.service.ScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +26,17 @@ public class ScheduleController {
     @GetMapping("/schedules")
     public ResponseEntity<List<ScheduleGetResponse>> getSchedulesByWriter(@RequestParam(required = false) String writer) {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findSchedule(writer));
+    }
+
+    // READ schedule 단일 조회
+    @GetMapping("/schedules/{scheduleId}")
+    public ResponseEntity<ScheduleGetResponse> getSchedule(@PathVariable Long scheduleId) {
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.findOneSchedule(scheduleId));
+    }
+
+    // UPDATE schedule 수정
+    @PutMapping("/schedules/{scheduleId}")
+    public ResponseEntity<ScheduleUpdateResponse> updateSchedule(@PathVariable Long scheduleId, @Valid @RequestBody ScheduleUpdateRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.updateSchedule(scheduleId, request));
     }
 }

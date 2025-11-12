@@ -1,8 +1,6 @@
 package com.example.scheduler.schedule.service;
 
-import com.example.scheduler.schedule.dto.ScheduleCreateRequest;
-import com.example.scheduler.schedule.dto.ScheduleCreateResponse;
-import com.example.scheduler.schedule.dto.ScheduleGetResponse;
+import com.example.scheduler.schedule.dto.*;
 import com.example.scheduler.schedule.entity.Schedule;
 import com.example.scheduler.schedule.repository.ScheduleRepository;
 import jakarta.validation.Valid;
@@ -76,7 +74,7 @@ public class ScheduleService {
     // READ 단일 schedule 조회
     @Transactional(readOnly = true)
     public ScheduleGetResponse findOneSchedule(Long scheduleId) {
-       Schedule schedule = checkSchedule(scheduleId);
+       Schedule schedule = getScheduleById(scheduleId);
        return new ScheduleGetResponse(
                schedule.getId(),
                schedule.getWriter(),
@@ -87,8 +85,26 @@ public class ScheduleService {
        );
     }
 
+    // UPDATE schedule 수정
+    @Transactional
+    public ScheduleUpdateResponse updateSchedule(Long scheduleId, ScheduleUpdateRequest request) {
+        Schedule schedule = getScheduleById(scheduleId);
+        schedule.setSchedule(
+                request.getTitle(),
+                request.getContents()
+        );
+        return new ScheduleUpdateResponse(
+                schedule.getId(),
+                schedule.getTitle(),
+                schedule.getContents(),
+                schedule.getWriter(),
+                schedule.getCreatedAt(),
+                schedule.getModifiedAt()
+        );
+    }
+
     // scheduleID가 일치하는 일정이 없으면 예외 처리
-    private Schedule checkSchedule(Long scheduleId) {
+    private Schedule getScheduleById(Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new IllegalArgumentException("일정이 없습니다.")
         );
