@@ -76,9 +76,7 @@ public class ScheduleService {
     // READ 단일 schedule 조회
     @Transactional(readOnly = true)
     public ScheduleGetResponse findOneSchedule(Long scheduleId) {
-       Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
-               () -> new IllegalArgumentException("일정이 없습니다.")
-       );
+       Schedule schedule = checkSchedule(scheduleId);
        return new ScheduleGetResponse(
                schedule.getId(),
                schedule.getWriter(),
@@ -87,5 +85,13 @@ public class ScheduleService {
                schedule.getCreatedAt(),
                schedule.getModifiedAt()
        );
+    }
+
+    // scheduleID가 일치하는 일정이 없으면 예외 처리
+    private Schedule checkSchedule(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new IllegalArgumentException("일정이 없습니다.")
+        );
+        return schedule;
     }
 }
