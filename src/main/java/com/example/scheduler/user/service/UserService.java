@@ -20,13 +20,14 @@ public class UserService {
 
     // CREATE 새 schedule 저장
     @Transactional
-    public UserCreateResponse saveUser(@Valid @RequestBody UserCreateRequest request) {
+    public SignupResponse saveUser(@Valid @RequestBody SignupRequest request) {
         User user = new User(
                 request.getUserName(),
-                request.getEmail()
+                request.getEmail(),
+                request.getPassword()
         );
         User savedUser = userRepository.save(user);
-        return new UserCreateResponse(
+        return new SignupResponse(
                 savedUser.getId(),
                 savedUser.getUserName(),
                 savedUser.getEmail(),
@@ -35,11 +36,25 @@ public class UserService {
         );
     }
 
-    // READ name 입력시 일치하는 user 조회
+    // login 로그인
+    @Transactional(readOnly = true)
+    public SessionUser login(@Valid LoginRequest request) {
+        User user = userRepository.findByEmailAndPassword(request.getEmail(), request.getPassword()).orElseThrow(
+                () -> new IllegalArgumentException("없는 유저 입니다.")
+        );
+        return new SessionUser(
+                user.getId(),
+                user.getUserName(),
+                user.getEmail(),
+                user.getPassword()
+        );
+    }
+
+    // READ userName 입력시 일치하는 user 조회
     // 미입력시 전체 user 조회
     @Transactional(readOnly = true)
-    public List<UserGetResponse> findUser(String name) {
-        if (name == null) { // writer 미입력시 전체 일정 조회
+    public List<UserGetResponse> findUser(String userName) {
+        if (userName == null) { // writer 미입력시 전체 일정 조회
             List<User> users = userRepository.findAllByOrderByModifiedAtDesc();
             List<UserGetResponse> dtos = new ArrayList<>();
             for (User user : users) {
@@ -53,8 +68,8 @@ public class UserService {
                 dtos.add(dto);
             }
             return dtos;
-        } else { // writer 입력시 writer가 일치하는 일정 조회
-            List<User> users = userRepository.findAllByNameOrderByModifiedAtDesc(name);
+        } else { // userName 입력시 userName 일치하는 일정 조회
+            List<User> users = userRepository.findAllByUserNameOrderByModifiedAtDesc(userName);
             List<UserGetResponse> dtos = new ArrayList<>();
             for (User user : users) {
                 UserGetResponse dto = new UserGetResponse(
@@ -100,13 +115,11 @@ public class UserService {
         );
     }
 
-    @Transactional
-
     // userId와 일치하는 user 가져오기
     // userID가 일치하는 일정이 없으면 예외 처리
     private User getUserById(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalArgumentException("유저가 없습니다.")
+                () -> new IllegalArgumentException("없는 유저 입니다.")
         );
         return user;
     }

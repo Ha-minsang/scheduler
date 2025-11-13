@@ -3,6 +3,8 @@ package com.example.scheduler.schedule.service;
 import com.example.scheduler.schedule.dto.*;
 import com.example.scheduler.schedule.entity.Schedule;
 import com.example.scheduler.schedule.repository.ScheduleRepository;
+import com.example.scheduler.user.entity.User;
+import com.example.scheduler.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,19 +19,23 @@ import java.util.List;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
     // CREATE 새 schedule 저장
     @Transactional
-    public ScheduleCreateResponse saveSchedule(@Valid @RequestBody ScheduleCreateRequest request) {
+    public ScheduleCreateResponse createSchedule(@Valid @RequestBody ScheduleCreateRequest request, Long loginUserId) {
+        User user = userRepository.findById(loginUserId).orElseThrow(
+                () -> new IllegalArgumentException("없는 유저 입니다.")
+        );
         Schedule schedule = new Schedule(
-                request.getWriter(),
+                user,
                 request.getTitle(),
                 request.getContents()
         );
         Schedule savedSchedule = scheduleRepository.save(schedule);
         return new ScheduleCreateResponse(
                 savedSchedule.getId(),
-                savedSchedule.getWriter(),
+                user.getUserName(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContents(),
                 savedSchedule.getCreatedAt(),
@@ -37,55 +43,55 @@ public class ScheduleService {
         );
     }
 
-    // READ writer 입력시 일치하는 schedule 조회
-    // 미입력시 전체 schedule 조회
+    // READ 전체 schedule 조회
     @Transactional(readOnly = true)
-    public List<ScheduleGetResponse> findSchedule(String writer) {
-        if (writer == null) { // writer 미입력시 전체 일정 조회
-            List<Schedule> schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
-            List<ScheduleGetResponse> dtos = new ArrayList<>();
-            for (Schedule schedule : schedules) {
-                ScheduleGetResponse dto = new ScheduleGetResponse(
-                        schedule.getId(),
-                        schedule.getWriter(),
-                        schedule.getTitle(),
-                        schedule.getContents(),
-                        schedule.getCreatedAt(),
-                        schedule.getModifiedAt()
-                );
-                dtos.add(dto);
-            }
-            return dtos;
-        } else { // writer 입력시 writer가 일치하는 schedule 조회
-            List<Schedule> schedules = scheduleRepository.findAllByWriterOrderByModifiedAtDesc(writer);
-            List<ScheduleGetResponse> dtos = new ArrayList<>();
-            for (Schedule schedule : schedules) {
-                ScheduleGetResponse dto = new ScheduleGetResponse(
-                        schedule.getId(),
-                        schedule.getWriter(),
-                        schedule.getTitle(),
-                        schedule.getContents(),
-                        schedule.getCreatedAt(),
-                        schedule.getModifiedAt()
-                );
-                dtos.add(dto);
-            }
-            return dtos;
+    public List<ScheduleGetResponse> getAllSchedules() {
+        List<Schedule> schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
+        List<ScheduleGetResponse> dtos = new ArrayList<>();
+        for (Schedule schedule : schedules) {
+            ScheduleGetResponse dto = new ScheduleGetResponse(
+                    schedule.getId(),
+                    schedule.getTitle(),
+                    schedule.getContents(),
+                    schedule.getCreatedAt(),
+                    schedule.getModifiedAt()
+            );
+            dtos.add(dto);
         }
+        return dtos;
     }
 
-    // READ 단일 schedule 조회
+    // READ userId로 해당 userId가 작성한 schedule 조회
+    public List<ScheduleGetResponse> getSchedulesByUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalArgumentException("없는 유저 입니다.")
+        );
+        List<Schedule> schedules = scheduleRepository.findAllByUserIdOrderByModifiedAtDesc(userId);
+        List<ScheduleGetResponse> dtos = new ArrayList<>();
+        for (Schedule schedule : schedules) {
+            ScheduleGetResponse dto = new ScheduleGetResponse(
+                    schedule.getId(),
+                    schedule.getTitle(),
+                    schedule.getContents(),
+                    schedule.getCreatedAt(),
+                    schedule.getModifiedAt()
+            );
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    // READ scheduleId로 단일 schedule 조회
     @Transactional(readOnly = true)
-    public ScheduleGetResponse findOneSchedule(Long scheduleId) {
-       Schedule schedule = getScheduleById(scheduleId);
-       return new ScheduleGetResponse(
-               schedule.getId(),
-               schedule.getWriter(),
-               schedule.getTitle(),
-               schedule.getContents(),
-               schedule.getCreatedAt(),
-               schedule.getModifiedAt()
-       );
+    public ScheduleGetResponse getOneSchedule(Long scheduleId) {
+        Schedule schedule = getScheduleById(scheduleId);
+        return new ScheduleGetResponse(
+                schedule.getId(),
+                schedule.getTitle(),
+                schedule.getContents(),
+                schedule.getCreatedAt(),
+                schedule.getModifiedAt()
+        );
     }
 
     // UPDATE schedule 수정
@@ -100,7 +106,6 @@ public class ScheduleService {
                 schedule.getId(),
                 schedule.getTitle(),
                 schedule.getContents(),
-                schedule.getWriter(),
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
         );

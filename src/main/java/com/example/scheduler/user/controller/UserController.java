@@ -2,6 +2,7 @@ package com.example.scheduler.user.controller;
 
 import com.example.scheduler.user.dto.*;
 import com.example.scheduler.user.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,10 +18,18 @@ public class UserController {
 
     private final UserService userService;
 
-    // CREATE 새 user 정보 저장
-    @PostMapping("/users")
-    public ResponseEntity<UserCreateResponse> createSchedule(@Valid @RequestBody UserCreateRequest request) {
+    // CREATE user 회원가입
+    @PostMapping("/signup")
+    public ResponseEntity<SignupResponse> createSchedule(@Valid @RequestBody SignupRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveUser(request));
+    }
+
+    // login 로그인
+    @PostMapping("/login")
+    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request, HttpSession session) {
+        SessionUser sessionUser = userService.login(request);
+        session.setAttribute("loginUser", sessionUser);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     // READ 작성자가 일치하는 schedule 조회
@@ -41,5 +50,7 @@ public class UserController {
     public ResponseEntity<UserUpdateResponse> updateSchedule(@PathVariable Long userId, @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(userId, request));
     }
+
+
 
 }

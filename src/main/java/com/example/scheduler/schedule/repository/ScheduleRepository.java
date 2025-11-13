@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     // writer가 일치하는 schedule을 조회하여 수정 시간 순으로 정렬
-    List<Schedule> findAllByWriterOrderByModifiedAtDesc(String writer);
+    List<Schedule> findAllByUserIdOrderByModifiedAtDesc(Long userId);
 
     // 전체 schedule 조회하여 수정 시간 순으로 정렬
     List<Schedule> findAllByOrderByModifiedAtDesc();

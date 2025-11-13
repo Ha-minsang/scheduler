@@ -25,10 +25,15 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String email;
 
+    // user 비밀번호
+    @Column(nullable = false)
+    private String password;
 
-    public User(String userName, String email) {
+
+    public User(String userName, String email, String password) {
         this.userName = userName;
         this.email = email;
+        this.password = password;
     }
 
     public void setUser(String userName, String email) {
