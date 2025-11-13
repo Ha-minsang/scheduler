@@ -22,13 +22,13 @@ public class UserService {
     @Transactional
     public UserCreateResponse saveUser(@Valid @RequestBody UserCreateRequest request) {
         User user = new User(
-                request.getName(),
+                request.getUserName(),
                 request.getEmail()
         );
         User savedUser = userRepository.save(user);
         return new UserCreateResponse(
                 savedUser.getId(),
-                savedUser.getName(),
+                savedUser.getUserName(),
                 savedUser.getEmail(),
                 savedUser.getCreatedAt(),
                 savedUser.getModifiedAt()
@@ -45,7 +45,7 @@ public class UserService {
             for (User user : users) {
                 UserGetResponse dto = new UserGetResponse(
                         user.getId(),
-                        user.getName(),
+                        user.getUserName(),
                         user.getEmail(),
                         user.getCreatedAt(),
                         user.getModifiedAt()
@@ -59,7 +59,7 @@ public class UserService {
             for (User user : users) {
                 UserGetResponse dto = new UserGetResponse(
                         user.getId(),
-                        user.getName(),
+                        user.getUserName(),
                         user.getEmail(),
                         user.getCreatedAt(),
                         user.getModifiedAt()
@@ -76,7 +76,7 @@ public class UserService {
         User user = getUserById(userId);
         return new UserGetResponse(
                 user.getId(),
-                user.getName(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getCreatedAt(),
                 user.getModifiedAt()
@@ -88,17 +88,19 @@ public class UserService {
     public UserUpdateResponse updateUser(Long userId, UserUpdateRequest request) {
         User user = getUserById(userId);
         user.setUser(
-                request.getName(),
+                request.getUserName(),
                 request.getEmail()
         );
         return new UserUpdateResponse(
                 user.getId(),
-                user.getName(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getCreatedAt(),
                 user.getModifiedAt()
         );
     }
+
+    @Transactional
 
     // userId와 일치하는 user 가져오기
     // userID가 일치하는 일정이 없으면 예외 처리

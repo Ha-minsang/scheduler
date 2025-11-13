@@ -1,4 +1,4 @@
-package com.example.scheduler.global.entity;
+package com.example.scheduler.common.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

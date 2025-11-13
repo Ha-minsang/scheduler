@@ -1,6 +1,6 @@
 package com.example.scheduler.user.entity;
 
-import com.example.scheduler.global.entity.BaseEntity;
+import com.example.scheduler.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,18 +17,22 @@ public class User extends BaseEntity {
     @Column(name = "users_id")
     private Long id;
 
+    // user 이름
     @Column(nullable = false)
-    private String name;
+    private String userName;
+
+    // user 이메일
     @Column(nullable = false)
     private String email;
 
-    public User(String name, String email) {
-        this.name = name;
+
+    public User(String userName, String email) {
+        this.userName = userName;
         this.email = email;
     }
 
-    public void setUser(String name, String email) {
-        this.name = name;
+    public void setUser(String userName, String email) {
+        this.userName = userName;
         this.email = email;
     }
 }

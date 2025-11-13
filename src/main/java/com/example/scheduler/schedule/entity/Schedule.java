@@ -1,6 +1,7 @@
 package com.example.scheduler.schedule.entity;
 
-import com.example.scheduler.global.entity.BaseEntity;
+import com.example.scheduler.common.entity.BaseEntity;
+import com.example.scheduler.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,10 +18,6 @@ public class Schedule extends BaseEntity {
     @Column(name = "schedules_id")
     private Long id;
 
-    // schedule 작성자
-    @Column(nullable = false)
-    private String writer;
-
     // schedule 제목
     @Column(length = 30, nullable = false)
     private String title;
@@ -29,8 +26,13 @@ public class Schedule extends BaseEntity {
     @Column(length = 200, nullable = false)
     private String contents;
 
-    public Schedule(String writer, String title, String contents) {
-        this.writer = writer;
+    // 다대일 관계
+    @ManyToOne
+    @JoinColumn(name = "users_id", nullable=false)
+    private User user;
+
+    public Schedule(User user, String title, String contents) {
+        this.user = user;
         this.title = title;
         this.contents = contents;
     }
