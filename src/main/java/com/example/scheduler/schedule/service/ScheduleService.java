@@ -113,6 +113,7 @@ public class ScheduleService {
         scheduleRepository.delete(schedule);
     }
 
+    // scheduleId가 일치하는 일정 가져오기
     // scheduleID가 일치하는 일정이 없으면 예외 처리
     private Schedule getScheduleById(Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
