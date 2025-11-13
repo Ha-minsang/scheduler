@@ -20,7 +20,7 @@ public class UserService {
 
     // CREATE 새 schedule 저장
     @Transactional
-    public SignupResponse saveUser(@Valid @RequestBody SignupRequest request) {
+    public SignupResponse createUser(@Valid @RequestBody SignupRequest request) {
         User user = new User(
                 request.getUserName(),
                 request.getEmail(),
@@ -50,39 +50,22 @@ public class UserService {
         );
     }
 
-    // READ userName 입력시 일치하는 user 조회
-    // 미입력시 전체 user 조회
-    @Transactional(readOnly = true)
-    public List<UserGetResponse> findUser(String userName) {
-        if (userName == null) { // writer 미입력시 전체 일정 조회
-            List<User> users = userRepository.findAllByOrderByModifiedAtDesc();
-            List<UserGetResponse> dtos = new ArrayList<>();
-            for (User user : users) {
-                UserGetResponse dto = new UserGetResponse(
-                        user.getId(),
-                        user.getUserName(),
-                        user.getEmail(),
-                        user.getCreatedAt(),
-                        user.getModifiedAt()
-                );
-                dtos.add(dto);
-            }
-            return dtos;
-        } else { // userName 입력시 userName 일치하는 일정 조회
-            List<User> users = userRepository.findAllByUserNameOrderByModifiedAtDesc(userName);
-            List<UserGetResponse> dtos = new ArrayList<>();
-            for (User user : users) {
-                UserGetResponse dto = new UserGetResponse(
-                        user.getId(),
-                        user.getUserName(),
-                        user.getEmail(),
-                        user.getCreatedAt(),
-                        user.getModifiedAt()
-                );
-                dtos.add(dto);
-            }
-            return dtos;
+
+    // READ 전체 user 조회
+    public List<UserGetResponse> findAllUsers() {
+        List<User> users = userRepository.findAllByOrderByModifiedAtDesc();
+        List<UserGetResponse> dtos = new ArrayList<>();
+        for (User user : users) {
+            UserGetResponse dto = new UserGetResponse(
+                    user.getId(),
+                    user.getUserName(),
+                    user.getEmail(),
+                    user.getCreatedAt(),
+                    user.getModifiedAt()
+            );
+            dtos.add(dto);
         }
+        return dtos;
     }
 
     // READ 단일 user 조회
@@ -113,6 +96,13 @@ public class UserService {
                 user.getCreatedAt(),
                 user.getModifiedAt()
         );
+    }
+
+    // DELETE user 삭제
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = getUserById(userId);
+        userRepository.delete(user);
     }
 
     // userId와 일치하는 user 가져오기

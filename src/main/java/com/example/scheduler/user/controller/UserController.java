@@ -21,7 +21,7 @@ public class UserController {
     // CREATE user 회원가입
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> createSchedule(@Valid @RequestBody SignupRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveUser(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
     }
 
     // login 로그인
@@ -32,25 +32,28 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    // READ 작성자가 일치하는 schedule 조회
-    // 작성자 미입력시 전체 schedule 조회
+    // READ 전체 user 조회
     @GetMapping("/users")
-    public ResponseEntity<List<UserGetResponse>> getSchedulesByWriter(@RequestParam(required = false) String name) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.findUser(name));
+    public ResponseEntity<List<UserGetResponse>> findAllUsers(){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.findAllUsers());
     }
 
-    // READ schedule 단일 조회
+    // READ user 단일 조회
     @GetMapping("/users/{userId}")
-    public ResponseEntity<UserGetResponse> getSchedule(@PathVariable Long userId) {
+    public ResponseEntity<UserGetResponse> findUser(@PathVariable Long userId) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findOneUser(userId));
     }
 
-    // UPDATE schedule 수정
+    // UPDATE user 수정
     @PutMapping("/users/{userId}")
-    public ResponseEntity<UserUpdateResponse> updateSchedule(@PathVariable Long userId, @Valid @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<UserUpdateResponse> updateUser(@PathVariable Long userId, @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(userId, request));
     }
 
-
-
+    // DELETE user 삭제
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
