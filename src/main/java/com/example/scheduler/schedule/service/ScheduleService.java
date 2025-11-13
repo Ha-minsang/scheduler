@@ -37,6 +37,9 @@ public class ScheduleService {
         );
     }
 
+    // READ writer 입력시 일치하는 일정 조회
+    // 미입력시 전체 일정 조회
+    @Transactional(readOnly = true)
     public List<ScheduleGetResponse> findSchedule(String writer) {
         if (writer == null) { // writer 미입력시 전체 일정 조회
             List<Schedule> schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
