@@ -1,12 +1,6 @@
 package com.example.scheduler.user.service;
 
-import com.example.scheduler.schedule.dto.ScheduleCreateRequest;
-import com.example.scheduler.schedule.dto.ScheduleCreateResponse;
-import com.example.scheduler.schedule.dto.ScheduleGetResponse;
-import com.example.scheduler.schedule.entity.Schedule;
-import com.example.scheduler.user.dto.UserCreateRequest;
-import com.example.scheduler.user.dto.UserCreateResponse;
-import com.example.scheduler.user.dto.UserGetResponse;
+import com.example.scheduler.user.dto.*;
 import com.example.scheduler.user.entity.User;
 import com.example.scheduler.user.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -76,11 +70,28 @@ public class UserService {
         }
     }
 
-    // READ 단일 schedule 조회
+    // READ 단일 user 조회
     @Transactional(readOnly = true)
     public UserGetResponse findOneUser(Long userId) {
         User user = getUserById(userId);
         return new UserGetResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getCreatedAt(),
+                user.getModifiedAt()
+        );
+    }
+
+    // UPDATE user 수정
+    @Transactional
+    public UserUpdateResponse updateUser(Long userId, UserUpdateRequest request) {
+        User user = getUserById(userId);
+        user.setUser(
+                request.getName(),
+                request.getEmail()
+        );
+        return new UserUpdateResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),

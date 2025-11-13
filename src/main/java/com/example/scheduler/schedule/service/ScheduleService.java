@@ -37,8 +37,8 @@ public class ScheduleService {
         );
     }
 
-    // READ writer 입력시 일치하는 일정 조회
-    // 미입력시 전체 일정 조회
+    // READ writer 입력시 일치하는 schedule 조회
+    // 미입력시 전체 schedule 조회
     @Transactional(readOnly = true)
     public List<ScheduleGetResponse> findSchedule(String writer) {
         if (writer == null) { // writer 미입력시 전체 일정 조회
@@ -56,7 +56,7 @@ public class ScheduleService {
                 dtos.add(dto);
             }
             return dtos;
-        } else { // writer 입력시 writer가 일치하는 일정 조회
+        } else { // writer 입력시 writer가 일치하는 schedule 조회
             List<Schedule> schedules = scheduleRepository.findAllByWriterOrderByModifiedAtDesc(writer);
             List<ScheduleGetResponse> dtos = new ArrayList<>();
             for (Schedule schedule : schedules) {
@@ -113,8 +113,8 @@ public class ScheduleService {
         scheduleRepository.delete(schedule);
     }
 
-    // scheduleId가 일치하는 일정 가져오기
-    // scheduleID가 일치하는 일정이 없으면 예외 처리
+    // scheduleId가 일치하는 schedule 가져오기
+    // scheduleID가 일치하는 schedule이 없으면 예외 처리
     private Schedule getScheduleById(Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
                 () -> new IllegalArgumentException("일정이 없습니다.")
