@@ -1,5 +1,6 @@
 package com.example.scheduler.domain.comment.service;
 
+import com.example.scheduler.common.config.AuthManager;
 import com.example.scheduler.common.exception.CommentException;
 import com.example.scheduler.common.exception.ScheduleException;
 import com.example.scheduler.common.exception.UserException;
@@ -26,6 +27,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
+    private final AuthManager authManager;
 
     // CREATE 새 comment 저장
     @Transactional
@@ -84,7 +86,8 @@ public class CommentService {
     public CommentUpdateResponse updateComment(Long scheduleId, Long commentId, Long loginUserId, CommentUpdateRequest request) {
         Schedule schedule = getScheduleById(scheduleId);
         Comment comment = getCommentByScheduleAndId(schedule, commentId);
-        validateAuthorization(loginUserId, comment);
+        Long userId = comment.getUser().getId();
+        authManager.validateAuthorization(loginUserId, userId);
         comment.setComment(
                 request.getContents()
         );
@@ -102,7 +105,8 @@ public class CommentService {
     public void deleteComment(Long scheduleId, Long commentId, Long loginUserId) {
         Schedule schedule = getScheduleById(scheduleId);
         Comment comment = getCommentByScheduleAndId(schedule, commentId);
-        validateAuthorization(loginUserId, comment);
+        Long userId = comment.getUser().getId();
+        authManager.validateAuthorization(loginUserId, userId);
         commentRepository.delete(comment);
     }
 
@@ -129,14 +133,6 @@ public class CommentService {
             throw new CommentException(NOT_FOUND_COMMENT);
         }
         return comment;
-    }
-
-    // 로그인한 유저가 권한이 있는지 확인
-    private void validateAuthorization(Long loginUserId, Comment comment) {
-        boolean isSameUser = comment.getUser().getId().equals(loginUserId);
-        if (!isSameUser) {
-            throw new CommentException(COMMENT_FORBIDDEN);
-        }
     }
 }
 

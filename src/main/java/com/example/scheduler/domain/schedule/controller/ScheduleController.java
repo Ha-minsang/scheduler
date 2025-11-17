@@ -21,8 +21,9 @@ public class ScheduleController {
     @PostMapping("/schedules")
     public ResponseEntity<ScheduleCreateResponse>createSchedule(
             @Valid @RequestBody ScheduleCreateRequest request,
-            @SessionAttribute("loginUserId") Long loginUserId
+            HttpSession session
     ) {
+        Long loginUserId = (Long) session.getAttribute("loginUserId");
         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.createSchedule(request, loginUserId));
     }
 
@@ -33,7 +34,7 @@ public class ScheduleController {
     }
 
     // READ Login한 user가 작성한 schedule 조회
-    @GetMapping("/schedules")
+    @GetMapping("/schedules/my")
     public ResponseEntity<List<ScheduleGetResponse>> findSchedulesByLoginUser(@SessionAttribute("loginUserId") Long loginUserId) {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getSchedulesByUser(loginUserId));
     }
@@ -55,8 +56,9 @@ public class ScheduleController {
     public ResponseEntity<ScheduleUpdateResponse> updateSchedule(
             @PathVariable Long scheduleId,
             @Valid @RequestBody ScheduleUpdateRequest request,
-            @SessionAttribute("loginUserId") Long loginUserId
+            HttpSession session
     ) {
+        Long loginUserId = (Long) session.getAttribute("loginUserId");
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.updateSchedule(scheduleId, loginUserId, request));
     }
 
@@ -64,8 +66,9 @@ public class ScheduleController {
     @DeleteMapping("/schedules/{scheduleId}")
     public ResponseEntity<Void> deleteSchedule(
             @PathVariable Long scheduleId,
-            @SessionAttribute("loginUserId") Long loginUserId
+            HttpSession session
     ) {
+        Long loginUserId = (Long) session.getAttribute("loginUserId");
         scheduleService.deleteSchedule(scheduleId, loginUserId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

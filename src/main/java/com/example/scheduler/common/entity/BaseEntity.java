@@ -20,4 +20,8 @@ public class BaseEntity {
     // 수정 시간
     @LastModifiedDate
     private LocalDateTime modifiedAt;
+
+    // 삭제 시간 및 삭제 여부 확인용
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

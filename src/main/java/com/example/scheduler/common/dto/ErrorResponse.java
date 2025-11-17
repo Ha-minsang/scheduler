@@ -3,6 +3,7 @@ package com.example.scheduler.common.dto;
 import com.example.scheduler.common.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
@@ -17,10 +18,10 @@ public class ErrorResponse {
     private final String path;                  // 에러 발생 url
     private final LocalDateTime timestamp;      // 에러 발생 시간
 
-    public ErrorResponse(ErrorCode errorCode, String path) {
+    public ErrorResponse(ErrorCode errorCode, String path, String message) {
         this.status = errorCode.getStatus().value();
         this.code = errorCode.getCode();
-        this.message = errorCode.getMessage();
+        this.message = message;
         this.path = path;
         this.timestamp = LocalDateTime.now();
     }

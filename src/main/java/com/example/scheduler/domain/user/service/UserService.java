@@ -1,8 +1,11 @@
 package com.example.scheduler.domain.user.service;
 
+import com.example.scheduler.common.config.AuthManager;
 import com.example.scheduler.common.config.PasswordEncoder;
 import com.example.scheduler.common.exception.AuthException;
+import com.example.scheduler.common.exception.CommentException;
 import com.example.scheduler.common.exception.UserException;
+import com.example.scheduler.domain.comment.entity.Comment;
 import com.example.scheduler.domain.user.dto.*;
 import com.example.scheduler.domain.user.entity.User;
 import com.example.scheduler.domain.user.repository.UserRepository;
@@ -15,8 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.scheduler.common.exception.ErrorCode.AUTH_INVALID_CREDENTIALS;
-import static com.example.scheduler.common.exception.ErrorCode.NOT_FOUND_USER;
+import static com.example.scheduler.common.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthManager authManager;
 
     // CREATE 새 schedule 저장
     @Transactional
@@ -94,7 +97,9 @@ public class UserService {
 
     // UPDATE user 수정
     @Transactional
-    public UserUpdateResponse updateUser(Long userId, UserUpdateRequest request) {
+    public UserUpdateResponse updateUser(Long userId, Long loginUserId, UserUpdateRequest request) {
+        authManager.validateLogin(loginUserId);
+        authManager.validateAuthorization(loginUserId, userId);
         User user = getUserById(userId);
         user.setUser(
                 request.getUserName(),
@@ -111,7 +116,9 @@ public class UserService {
 
     // DELETE user 삭제
     @Transactional
-    public void deleteUser(Long userId) {
+    public void deleteUser(Long userId, Long loginUserId) {
+        authManager.validateLogin(loginUserId);
+        authManager.validateAuthorization(loginUserId, userId);
         User user = getUserById(userId);
         userRepository.delete(user);
     }

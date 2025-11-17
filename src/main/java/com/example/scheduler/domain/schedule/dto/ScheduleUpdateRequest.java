@@ -8,6 +8,7 @@ public class ScheduleUpdateRequest {
 
     @NotBlank
     private String title;
+
     @NotBlank
     private String contents;
 }

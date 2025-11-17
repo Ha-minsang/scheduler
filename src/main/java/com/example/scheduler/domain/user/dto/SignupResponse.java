@@ -1,7 +1,10 @@
 package com.example.scheduler.domain.user.dto;
 
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
+@Getter
 public class SignupResponse {
 
     private final Long id;

@@ -6,11 +6,15 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Entity
 @Table(name = "schedules")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Schedule extends BaseEntity {
 
     @Id

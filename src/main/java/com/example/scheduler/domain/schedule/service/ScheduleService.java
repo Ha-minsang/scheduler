@@ -1,5 +1,6 @@
 package com.example.scheduler.domain.schedule.service;
 
+import com.example.scheduler.common.config.AuthManager;
 import com.example.scheduler.common.exception.AuthException;
 import com.example.scheduler.common.exception.ScheduleException;
 import com.example.scheduler.common.exception.UserException;
@@ -25,6 +26,7 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final AuthManager authManager;
 
     // CREATE 새 schedule 저장
     @Transactional
@@ -38,7 +40,7 @@ public class ScheduleService {
         Schedule savedSchedule = scheduleRepository.save(schedule);
         return new ScheduleCreateResponse(
                 savedSchedule.getId(),
-                user.getUserName(),
+                savedSchedule.getUser().getUserName(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContents(),
                 savedSchedule.getCreatedAt(),
@@ -55,6 +57,7 @@ public class ScheduleService {
             ScheduleGetResponse dto = new ScheduleGetResponse(
                     schedule.getId(),
                     schedule.getTitle(),
+                    schedule.getUser().getUserName(),
                     schedule.getContents(),
                     schedule.getCreatedAt(),
                     schedule.getModifiedAt()
@@ -68,12 +71,13 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public List<ScheduleGetResponse> getSchedulesByUser(Long userId) {
         User user = getUserById(userId);
-        List<Schedule> schedules = scheduleRepository.findAllByUserIdOrderByModifiedAtDesc(userId);
+        List<Schedule> schedules = scheduleRepository.findAllByUserId(userId);
         List<ScheduleGetResponse> dtos = new ArrayList<>();
         for (Schedule schedule : schedules) {
             ScheduleGetResponse dto = new ScheduleGetResponse(
                     schedule.getId(),
                     schedule.getTitle(),
+                    user.getUserName(),
                     schedule.getContents(),
                     schedule.getCreatedAt(),
                     schedule.getModifiedAt()
@@ -90,6 +94,7 @@ public class ScheduleService {
         return new ScheduleGetResponse(
                 schedule.getId(),
                 schedule.getTitle(),
+                schedule.getUser().getUserName(),
                 schedule.getContents(),
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
@@ -100,7 +105,8 @@ public class ScheduleService {
     @Transactional
     public ScheduleUpdateResponse updateSchedule(Long scheduleId, Long loginUserId, ScheduleUpdateRequest request) {
         Schedule schedule = getScheduleById(scheduleId);
-        validateAuthorization(loginUserId, schedule);
+        Long userId = schedule.getUser().getId();
+        authManager.validateAuthorization(loginUserId, userId);
         schedule.setSchedule(
                 request.getTitle(),
                 request.getContents()
@@ -108,6 +114,7 @@ public class ScheduleService {
         return new ScheduleUpdateResponse(
                 schedule.getId(),
                 schedule.getTitle(),
+                schedule.getUser().getUserName(),
                 schedule.getContents(),
                 schedule.getCreatedAt(),
                 schedule.getModifiedAt()
@@ -118,7 +125,8 @@ public class ScheduleService {
     @Transactional
     public void deleteSchedule(Long scheduleId, Long loginUserId) {
         Schedule schedule = getScheduleById(scheduleId);
-        validateAuthorization(loginUserId, schedule);
+        Long userId = schedule.getUser().getId();
+        authManager.validateAuthorization(loginUserId, userId);
         scheduleRepository.delete(schedule);
     }
 
@@ -138,13 +146,5 @@ public class ScheduleService {
                 () -> new UserException(NOT_FOUND_USER)
         );
         return user;
-    }
-
-    // 로그인한 유저가 권한이 있는지 확인
-    private void validateAuthorization(Long loginUserId, Schedule schedule) {
-        boolean isSameUser = schedule.getUser().getId().equals(loginUserId);
-        if (!isSameUser) {
-            throw new ScheduleException(SCHEDULE_FORBIDDEN);
-        }
     }
 }

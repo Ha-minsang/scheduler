@@ -7,11 +7,15 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Getter
 @Entity
 @Table(name = "comments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Comment extends BaseEntity {
 
     @Id
@@ -23,10 +27,12 @@ public class Comment extends BaseEntity {
     @Column(length = 200, nullable = false)
     private String contents;
 
+    // user와 다대일 관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // schedule과 다대일 관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedules_id", nullable = false)
     private Schedule schedule;
