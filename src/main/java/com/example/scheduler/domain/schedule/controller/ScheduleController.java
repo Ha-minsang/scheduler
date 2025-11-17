@@ -55,16 +55,18 @@ public class ScheduleController {
     public ResponseEntity<ScheduleUpdateResponse> updateSchedule(
             @PathVariable Long scheduleId,
             @Valid @RequestBody ScheduleUpdateRequest request,
-            HttpSession session
+            @SessionAttribute("loginUserId") Long loginUserId
     ) {
-        Long loginUserId = (Long) session.getAttribute("loginUserId");
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.updateSchedule(scheduleId, loginUserId, request));
     }
 
     // DELETE schedule 삭제
     @DeleteMapping("/schedules/{scheduleId}")
-    public ResponseEntity<Void> deleteSchedule(@PathVariable Long scheduleId) {
-        scheduleService.deleteSchedule(scheduleId);
+    public ResponseEntity<Void> deleteSchedule(
+            @PathVariable Long scheduleId,
+            @SessionAttribute("loginUserId") Long loginUserId
+    ) {
+        scheduleService.deleteSchedule(scheduleId, loginUserId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

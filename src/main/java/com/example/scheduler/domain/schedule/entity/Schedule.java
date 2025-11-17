@@ -27,8 +27,8 @@ public class Schedule extends BaseEntity {
     private String contents;
 
     // 다대일 관계
-    @ManyToOne
-    @JoinColumn(name = "users_id", nullable=false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "users_id", nullable = false)
     private User user;
 
     public Schedule(User user, String title, String contents) {

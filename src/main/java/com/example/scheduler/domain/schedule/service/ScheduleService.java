@@ -101,6 +101,7 @@ public class ScheduleService {
     @Transactional
     public ScheduleUpdateResponse updateSchedule(Long scheduleId, Long loginUserId, ScheduleUpdateRequest request) {
         Schedule schedule = getScheduleById(scheduleId);
+        validateAuthorization(loginUserId, schedule);
         schedule.setSchedule(
                 request.getTitle(),
                 request.getContents()
@@ -116,8 +117,9 @@ public class ScheduleService {
 
     // DELETE schedule 삭제
     @Transactional
-    public void deleteSchedule(Long scheduleId) {
+    public void deleteSchedule(Long scheduleId, Long loginUserId) {
         Schedule schedule = getScheduleById(scheduleId);
+        validateAuthorization(loginUserId, schedule);
         scheduleRepository.delete(schedule);
     }
 
@@ -143,6 +145,15 @@ public class ScheduleService {
     private void validateLogin(Long loginUserId) {
         if (loginUserId == null) {
             throw new AuthException(NOT_LOGGED_IN);
+        }
+    }
+
+
+    // 로그인한 유저가 권한이 있는지 확인
+    private void validateAuthorization(Long loginUserId, Schedule schedule) {
+        boolean isSameUser = schedule.getUser().getId().equals(loginUserId);
+        if (!isSameUser) {
+            throw new ScheduleException(SCHEDULE_FORBIDDEN);
         }
     }
 }
