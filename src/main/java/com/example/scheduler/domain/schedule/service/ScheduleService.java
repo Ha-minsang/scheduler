@@ -29,7 +29,6 @@ public class ScheduleService {
     // CREATE 새 schedule 저장
     @Transactional
     public ScheduleCreateResponse createSchedule(@Valid @RequestBody ScheduleCreateRequest request, Long loginUserId) {
-        validateLogin(loginUserId);
         User user = getUserById(loginUserId);
         Schedule schedule = new Schedule(
                 user,
@@ -140,14 +139,6 @@ public class ScheduleService {
         );
         return user;
     }
-
-    // 로그인 여부 확인
-    private void validateLogin(Long loginUserId) {
-        if (loginUserId == null) {
-            throw new AuthException(NOT_LOGGED_IN);
-        }
-    }
-
 
     // 로그인한 유저가 권한이 있는지 확인
     private void validateAuthorization(Long loginUserId, Schedule schedule) {

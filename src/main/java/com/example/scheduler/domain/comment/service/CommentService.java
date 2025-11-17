@@ -1,0 +1,145 @@
+package com.example.scheduler.domain.comment.service;
+
+import com.example.scheduler.common.exception.CommentException;
+import com.example.scheduler.common.exception.ScheduleException;
+import com.example.scheduler.common.exception.UserException;
+import com.example.scheduler.domain.comment.dto.*;
+import com.example.scheduler.domain.comment.entity.Comment;
+import com.example.scheduler.domain.comment.repository.CommentRepository;
+import com.example.scheduler.domain.schedule.entity.Schedule;
+import com.example.scheduler.domain.schedule.repository.ScheduleRepository;
+import com.example.scheduler.domain.user.entity.User;
+import com.example.scheduler.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.example.scheduler.common.exception.ErrorCode.*;
+
+@Service
+@RequiredArgsConstructor
+public class CommentService {
+
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final ScheduleRepository scheduleRepository;
+
+    // CREATE 새 comment 저장
+    @Transactional
+    public CommentCreateResponse saveComment(Long scheduleId, Long loginUserId, CommentCreateRequest request) {
+        User user = getUserById(loginUserId);
+        Schedule schedule = getScheduleById(scheduleId);
+        Comment comment = new Comment(
+                schedule,
+                user,
+                request.getContents()
+        );
+        Comment savedComment = commentRepository.save(comment);
+        return new CommentCreateResponse(
+                savedComment.getId(),
+                savedComment.getContents(),
+                savedComment.getUser().getUserName(),
+                savedComment.getCreatedAt(),
+                savedComment.getModifiedAt()
+        );
+    }
+
+    // READ 전체 comment 조회
+    @Transactional(readOnly = true)
+    public List<CommentGetResponse> getAllCommentsByScheduleId(Long scheduleId) {
+        Schedule schedule = getScheduleById(scheduleId);
+        List<Comment> comments = commentRepository.findAllBySchedule(schedule);
+        List<CommentGetResponse> dtos = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentGetResponse dto = new CommentGetResponse(
+                    comment.getId(),
+                    comment.getUser().getUserName(),
+                    comment.getContents(),
+                    schedule.getCreatedAt(),
+                    schedule.getModifiedAt()
+            );
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    // READ commentId로 단건 comment 조회
+    public CommentGetResponse getCommentById(Long scheduleId, Long commentId) {
+        Schedule schedule = getScheduleById(scheduleId);
+        Comment comment = getCommentByScheduleAndId(schedule, commentId);
+        return new CommentGetResponse(
+                comment.getId(),
+                comment.getUser().getUserName(),
+                comment.getContents(),
+                schedule.getCreatedAt(),
+                schedule.getModifiedAt()
+        );
+    }
+
+    // UPDATE comment 수정
+    @Transactional
+    public CommentUpdateResponse updateComment(Long scheduleId, Long commentId, Long loginUserId, CommentUpdateRequest request) {
+        Schedule schedule = getScheduleById(scheduleId);
+        Comment comment = getCommentByScheduleAndId(schedule, commentId);
+        validateAuthorization(loginUserId, comment);
+        comment.setComment(
+                request.getContents()
+        );
+        return new CommentUpdateResponse(
+                comment.getId(),
+                comment.getUser().getUserName(),
+                comment.getContents(),
+                comment.getCreatedAt(),
+                comment.getModifiedAt()
+        );
+    }
+
+    // DELETE comment 삭제
+    @Transactional
+    public void deleteComment(Long scheduleId, Long commentId, Long loginUserId) {
+        Schedule schedule = getScheduleById(scheduleId);
+        Comment comment = getCommentByScheduleAndId(schedule, commentId);
+        validateAuthorization(loginUserId, comment);
+        commentRepository.delete(comment);
+    }
+
+    // scheduleId가 일치하는 일정을 가져오기, 일치하는 schedule이 없으면 예외처리
+    private Schedule getScheduleById(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(
+                () -> new ScheduleException(NOT_FOUND_SCHEDULE)
+        );
+        return schedule;
+    }
+
+    // userId와 일치하는 user을 가져오기, 일치하는 user가 없으면 예외처리
+    private User getUserById(Long loginUserId) {
+        User user = userRepository.findById(loginUserId).orElseThrow(
+                () -> new UserException(NOT_FOUND_USER)
+        );
+        return user;
+    }
+
+    // scheduleId와 commentId가 일치하는 일정이 없으면 예외 처리
+    private Comment getCommentByScheduleAndId(Schedule schedule, Long commentId) {
+        Comment comment = commentRepository.findByScheduleAndId(schedule, commentId);
+        if (comment == null) {
+            throw new CommentException(NOT_FOUND_COMMENT);
+        }
+        return comment;
+    }
+
+    // 로그인한 유저가 권한이 있는지 확인
+    private void validateAuthorization(Long loginUserId, Comment comment) {
+        boolean isSameUser = comment.getUser().getId().equals(loginUserId);
+        if (!isSameUser) {
+            throw new CommentException(COMMENT_FORBIDDEN);
+        }
+    }
+}
+
+
+
+
