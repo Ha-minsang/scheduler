@@ -24,4 +24,8 @@ public class BaseEntity {
     // 삭제 시간 및 삭제 여부 확인용
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

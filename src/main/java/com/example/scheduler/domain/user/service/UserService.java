@@ -6,6 +6,9 @@ import com.example.scheduler.common.exception.AuthException;
 import com.example.scheduler.common.exception.CommentException;
 import com.example.scheduler.common.exception.UserException;
 import com.example.scheduler.domain.comment.entity.Comment;
+import com.example.scheduler.domain.comment.repository.CommentRepository;
+import com.example.scheduler.domain.schedule.entity.Schedule;
+import com.example.scheduler.domain.schedule.repository.ScheduleRepository;
 import com.example.scheduler.domain.user.dto.*;
 import com.example.scheduler.domain.user.entity.User;
 import com.example.scheduler.domain.user.repository.UserRepository;
@@ -25,6 +28,8 @@ import static com.example.scheduler.common.exception.ErrorCode.*;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthManager authManager;
 
@@ -120,6 +125,8 @@ public class UserService {
         authManager.validateLogin(loginUserId);
         authManager.validateAuthorization(loginUserId, userId);
         User user = getUserById(userId);
+        commentRepository.findAllByUserId(userId).forEach(Comment::softDelete);
+        scheduleRepository.findAllByUserId(userId).forEach(Schedule::softDelete);
         userRepository.delete(user);
     }
 
