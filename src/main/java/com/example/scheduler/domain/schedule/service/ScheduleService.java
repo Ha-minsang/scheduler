@@ -12,12 +12,13 @@ import com.example.scheduler.domain.user.entity.User;
 import com.example.scheduler.domain.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.example.scheduler.common.exception.ErrorCode.*;
 
@@ -40,67 +41,31 @@ public class ScheduleService {
                 request.getContents()
         );
         Schedule savedSchedule = scheduleRepository.save(schedule);
-        return new ScheduleCreateResponse(
-                savedSchedule.getId(),
-                savedSchedule.getUser().getUserName(),
-                savedSchedule.getTitle(),
-                savedSchedule.getContents(),
-                savedSchedule.getCreatedAt(),
-                savedSchedule.getModifiedAt()
-        );
+        return ScheduleCreateResponse.from(savedSchedule);
     }
 
-    // READ 전체 schedule 조회
+    // READ 전체 schedule 조회 (page 0부터 시작, default page = 0, default pageSize = 10)
     @Transactional(readOnly = true)
-    public List<ScheduleGetResponse> getAllSchedules() {
-        List<Schedule> schedules = scheduleRepository.findAllByOrderByModifiedAtDesc();
-        List<ScheduleGetResponse> dtos = new ArrayList<>();
-        for (Schedule schedule : schedules) {
-            ScheduleGetResponse dto = new ScheduleGetResponse(
-                    schedule.getId(),
-                    schedule.getTitle(),
-                    schedule.getUser().getUserName(),
-                    schedule.getContents(),
-                    schedule.getCreatedAt(),
-                    schedule.getModifiedAt()
-            );
-            dtos.add(dto);
-        }
-        return dtos;
+    public Page<ScheduleGetResponse> getAllSchedules(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("modifiedAt").descending());
+        Page<Schedule> schedules = scheduleRepository.findAll(pageable);
+        return schedules.map(ScheduleGetResponse::from);
     }
 
     // READ userId로 해당 userId가 작성한 schedule 조회
     @Transactional(readOnly = true)
-    public List<ScheduleGetResponse> getSchedulesByUser(Long userId) {
-        User user = getUserById(userId);
-        List<Schedule> schedules = scheduleRepository.findAllByUserId(userId);
-        List<ScheduleGetResponse> dtos = new ArrayList<>();
-        for (Schedule schedule : schedules) {
-            ScheduleGetResponse dto = new ScheduleGetResponse(
-                    schedule.getId(),
-                    schedule.getTitle(),
-                    user.getUserName(),
-                    schedule.getContents(),
-                    schedule.getCreatedAt(),
-                    schedule.getModifiedAt()
-            );
-            dtos.add(dto);
-        }
-        return dtos;
+    public Page<ScheduleGetResponse> getSchedulesByUser(Long userId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("modifiedAt").descending());
+        getUserById(userId); // user 존재 여부 확인용
+        Page<Schedule> schedules = scheduleRepository.findAllByUserId(userId, pageable);
+        return schedules.map(ScheduleGetResponse::from);
     }
 
     // READ scheduleId로 단일 schedule 조회
     @Transactional(readOnly = true)
     public ScheduleGetResponse getOneSchedule(Long scheduleId) {
         Schedule schedule = getScheduleById(scheduleId);
-        return new ScheduleGetResponse(
-                schedule.getId(),
-                schedule.getTitle(),
-                schedule.getUser().getUserName(),
-                schedule.getContents(),
-                schedule.getCreatedAt(),
-                schedule.getModifiedAt()
-        );
+        return ScheduleGetResponse.from(schedule);
     }
 
     // UPDATE schedule 수정
@@ -113,14 +78,7 @@ public class ScheduleService {
                 request.getTitle(),
                 request.getContents()
         );
-        return new ScheduleUpdateResponse(
-                schedule.getId(),
-                schedule.getTitle(),
-                schedule.getUser().getUserName(),
-                schedule.getContents(),
-                schedule.getCreatedAt(),
-                schedule.getModifiedAt()
-        );
+        return ScheduleUpdateResponse.from(schedule);
     }
 
     // DELETE schedule 삭제
@@ -129,7 +87,7 @@ public class ScheduleService {
         Schedule schedule = getScheduleById(scheduleId);
         Long userId = schedule.getUser().getId();
         authManager.validateAuthorization(loginUserId, userId);
-        commentRepository.findAllBySchedule(schedule).forEach(Comment::softDelete);
+        commentRepository.findAllByScheduleId(scheduleId).forEach(Comment::softDelete); // 삭제할 일정에 있는 댓글 먼저 softDelete 진행
         scheduleRepository.delete(schedule);
     }
 

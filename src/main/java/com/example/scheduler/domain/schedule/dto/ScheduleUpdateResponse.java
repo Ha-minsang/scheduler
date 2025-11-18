@@ -1,7 +1,11 @@
 package com.example.scheduler.domain.schedule.dto;
 
+import com.example.scheduler.domain.schedule.entity.Schedule;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
+@Getter
 public class ScheduleUpdateResponse {
 
     private final Long id;
@@ -18,5 +22,16 @@ public class ScheduleUpdateResponse {
         this.contents = contents;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
+    }
+
+    public static ScheduleUpdateResponse from(Schedule schedule) {
+        return new ScheduleUpdateResponse(
+                schedule.getId(),
+                schedule.getUser().getUserName(),
+                schedule.getTitle(),
+                schedule.getContents(),
+                schedule.getCreatedAt(),
+                schedule.getModifiedAt()
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.example.scheduler.domain.user.dto;
 
+import com.example.scheduler.domain.user.entity.User;
 import lombok.Getter;
 
 @Getter
@@ -15,5 +16,14 @@ public class SessionUser {
         this.userName = userName;
         this.email = email;
         this.password = password;
+    }
+
+    public static SessionUser from(User user) {
+        return new SessionUser(
+                user.getId(),
+                user.getUserName(),
+                user.getEmail(),
+                user.getPassword()
+        );
     }
 }

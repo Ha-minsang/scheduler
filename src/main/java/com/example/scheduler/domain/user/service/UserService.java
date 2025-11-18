@@ -3,7 +3,6 @@ package com.example.scheduler.domain.user.service;
 import com.example.scheduler.common.config.AuthManager;
 import com.example.scheduler.common.config.PasswordEncoder;
 import com.example.scheduler.common.exception.AuthException;
-import com.example.scheduler.common.exception.CommentException;
 import com.example.scheduler.common.exception.UserException;
 import com.example.scheduler.domain.comment.entity.Comment;
 import com.example.scheduler.domain.comment.repository.CommentRepository;
@@ -14,12 +13,13 @@ import com.example.scheduler.domain.user.entity.User;
 import com.example.scheduler.domain.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.example.scheduler.common.exception.ErrorCode.*;
 
@@ -42,13 +42,7 @@ public class UserService {
                 passwordEncoder.encode(request.getPassword())
         );
         User savedUser = userRepository.save(user);
-        return new SignupResponse(
-                savedUser.getId(),
-                savedUser.getUserName(),
-                savedUser.getEmail(),
-                savedUser.getCreatedAt(),
-                savedUser.getModifiedAt()
-        );
+        return SignupResponse.from(savedUser);
     }
 
     // login 로그인
@@ -61,43 +55,22 @@ public class UserService {
         if (!isMatched) {
             throw new AuthException(AUTH_INVALID_CREDENTIALS);
         }
-        return new SessionUser(
-                user.getId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getPassword()
-        );
+        return SessionUser.from(user);
     }
 
 
     // READ 전체 user 조회
-    public List<UserGetResponse> findAllUsers() {
-        List<User> users = userRepository.findAllByOrderByModifiedAtDesc();
-        List<UserGetResponse> dtos = new ArrayList<>();
-        for (User user : users) {
-            UserGetResponse dto = new UserGetResponse(
-                    user.getId(),
-                    user.getUserName(),
-                    user.getEmail(),
-                    user.getCreatedAt(),
-                    user.getModifiedAt()
-            );
-            dtos.add(dto);
-        }
-        return dtos;
+    public Page<UserGetResponse> getAllUsers(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("modifiedAt").descending());
+        Page<User> users = userRepository.findAll(pageable);
+        return users.map(UserGetResponse::from);
     }
 
     // READ 단일 user 조회
     @Transactional(readOnly = true)
-    public UserGetResponse findOneUser(Long userId) {
+    public UserGetResponse getOneUser(Long userId) {
         User user = getUserById(userId);
-        return new UserGetResponse(
-                user.getId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getCreatedAt(),
-                user.getModifiedAt()
-        );
+        return UserGetResponse.from(user);
     }
 
     // UPDATE user 수정
@@ -110,13 +83,7 @@ public class UserService {
                 request.getUserName(),
                 request.getEmail()
         );
-        return new UserUpdateResponse(
-                user.getId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getCreatedAt(),
-                user.getModifiedAt()
-        );
+        return UserUpdateResponse.from(user);
     }
 
     // DELETE user 삭제
@@ -125,8 +92,8 @@ public class UserService {
         authManager.validateLogin(loginUserId);
         authManager.validateAuthorization(loginUserId, userId);
         User user = getUserById(userId);
-        commentRepository.findAllByUserId(userId).forEach(Comment::softDelete);
-        scheduleRepository.findAllByUserId(userId).forEach(Schedule::softDelete);
+        commentRepository.findAllByUserId(userId).forEach(Comment::softDelete); // 삭제하는 유저가 작성한 comment를 softDelete
+        scheduleRepository.findAllByUserId(userId).forEach(Schedule::softDelete); // 삭제하는 유저가 작성한 schedule을 softDelete
         userRepository.delete(user);
     }
 

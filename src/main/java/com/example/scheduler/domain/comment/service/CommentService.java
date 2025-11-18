@@ -12,11 +12,12 @@ import com.example.scheduler.domain.schedule.repository.ScheduleRepository;
 import com.example.scheduler.domain.user.entity.User;
 import com.example.scheduler.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.example.scheduler.common.exception.ErrorCode.*;
 
@@ -40,71 +41,39 @@ public class CommentService {
                 request.getContents()
         );
         Comment savedComment = commentRepository.save(comment);
-        return new CommentCreateResponse(
-                savedComment.getId(),
-                savedComment.getContents(),
-                savedComment.getUser().getUserName(),
-                savedComment.getCreatedAt(),
-                savedComment.getModifiedAt()
-        );
+        return CommentCreateResponse.from(savedComment);
     }
 
-    // READ 전체 comment 조회
+    // READ scheduleId가 일치하는 전체 comment 조회
     @Transactional(readOnly = true)
-    public List<CommentGetResponse> getAllCommentsByScheduleId(Long scheduleId) {
-        Schedule schedule = getScheduleById(scheduleId);
-        List<Comment> comments = commentRepository.findAllBySchedule(schedule);
-        List<CommentGetResponse> dtos = new ArrayList<>();
-        for (Comment comment : comments) {
-            CommentGetResponse dto = new CommentGetResponse(
-                    comment.getId(),
-                    comment.getUser().getUserName(),
-                    comment.getContents(),
-                    schedule.getCreatedAt(),
-                    schedule.getModifiedAt()
-            );
-            dtos.add(dto);
-        }
-        return dtos;
+    public Page<CommentGetResponse> getAllCommentsByScheduleId(Long scheduleId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("modifiedAt").descending());
+        Page<Comment> comments = commentRepository.findAllByScheduleId(scheduleId, pageable);
+        return comments.map(CommentGetResponse::from);
     }
 
     // READ commentId로 단건 comment 조회
     public CommentGetResponse getCommentById(Long scheduleId, Long commentId) {
-        Schedule schedule = getScheduleById(scheduleId);
-        Comment comment = getCommentByScheduleAndId(schedule, commentId);
-        return new CommentGetResponse(
-                comment.getId(),
-                comment.getUser().getUserName(),
-                comment.getContents(),
-                schedule.getCreatedAt(),
-                schedule.getModifiedAt()
-        );
+        Comment comment = getCommentByScheduleAndId(scheduleId, commentId);
+        return CommentGetResponse.from(comment);
     }
 
     // UPDATE comment 수정
     @Transactional
     public CommentUpdateResponse updateComment(Long scheduleId, Long commentId, Long loginUserId, CommentUpdateRequest request) {
-        Schedule schedule = getScheduleById(scheduleId);
-        Comment comment = getCommentByScheduleAndId(schedule, commentId);
+        Comment comment = getCommentByScheduleAndId(scheduleId, commentId);
         Long userId = comment.getUser().getId();
         authManager.validateAuthorization(loginUserId, userId);
         comment.setComment(
                 request.getContents()
         );
-        return new CommentUpdateResponse(
-                comment.getId(),
-                comment.getUser().getUserName(),
-                comment.getContents(),
-                comment.getCreatedAt(),
-                comment.getModifiedAt()
-        );
+        return CommentUpdateResponse.from(comment);
     }
 
     // DELETE comment 삭제
     @Transactional
     public void deleteComment(Long scheduleId, Long commentId, Long loginUserId) {
-        Schedule schedule = getScheduleById(scheduleId);
-        Comment comment = getCommentByScheduleAndId(schedule, commentId);
+        Comment comment = getCommentByScheduleAndId(scheduleId, commentId);
         Long userId = comment.getUser().getId();
         authManager.validateAuthorization(loginUserId, userId);
         commentRepository.delete(comment);
@@ -127,8 +96,8 @@ public class CommentService {
     }
 
     // scheduleId와 commentId가 일치하는 일정이 없으면 예외 처리
-    private Comment getCommentByScheduleAndId(Schedule schedule, Long commentId) {
-        Comment comment = commentRepository.findByScheduleAndId(schedule, commentId);
+    private Comment getCommentByScheduleAndId(Long scheduleId, Long commentId) {
+        Comment comment = commentRepository.findByScheduleIdAndId(scheduleId, commentId);
         if (comment == null) {
             throw new CommentException(NOT_FOUND_COMMENT);
         }

@@ -5,6 +5,7 @@ import com.example.scheduler.domain.comment.service.CommentService;
 import com.example.scheduler.domain.schedule.dto.ScheduleGetResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,12 @@ public class CommentController {
 
     // READ 특정 schedule의 전체 comment 조회
     @GetMapping("/schedules/{scheduleId}/comments")
-    public ResponseEntity<List<CommentGetResponse>> getComments(@PathVariable Long scheduleId){
-        return ResponseEntity.status(HttpStatus.OK).body(commentService.getAllCommentsByScheduleId(scheduleId));
+    public ResponseEntity<Page<CommentGetResponse>> getComments(
+            @PathVariable Long scheduleId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ){
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.getAllCommentsByScheduleId(scheduleId, page, pageSize));
     }
 
     // READ 단일 comment 조회

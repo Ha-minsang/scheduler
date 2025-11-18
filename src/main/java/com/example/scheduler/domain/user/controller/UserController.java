@@ -6,6 +6,7 @@ import com.example.scheduler.domain.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,14 +49,17 @@ public class UserController {
 
     // READ 전체 user 조회
     @GetMapping("/users")
-    public ResponseEntity<List<UserGetResponse>> findAllUsers(){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.findAllUsers());
+    public ResponseEntity<Page<UserGetResponse>> getAllUsers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsers(page, pageSize));
     }
 
     // READ user 단일 조회
     @GetMapping("/users/{userId}")
-    public ResponseEntity<UserGetResponse> findUser(@PathVariable Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.findOneUser(userId));
+    public ResponseEntity<UserGetResponse> getUser(@PathVariable Long userId) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getOneUser(userId));
     }
 
     // UPDATE user 수정

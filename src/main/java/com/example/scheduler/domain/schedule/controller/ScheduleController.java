@@ -5,6 +5,7 @@ import com.example.scheduler.domain.schedule.service.ScheduleService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,20 +30,31 @@ public class ScheduleController {
 
     // READ 전체 schedule 조회
     @GetMapping("/schedules")
-    public ResponseEntity<List<ScheduleGetResponse>> findAllSchedules(){
-        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getAllSchedules());
+    public ResponseEntity<Page<ScheduleGetResponse>> getAllSchedules(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ){
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getAllSchedules(page, pageSize));
     }
 
     // READ Login한 user가 작성한 schedule 조회
     @GetMapping("/schedules/my")
-    public ResponseEntity<List<ScheduleGetResponse>> findSchedulesByLoginUser(@SessionAttribute("loginUserId") Long loginUserId) {
-        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getSchedulesByUser(loginUserId));
+    public ResponseEntity<Page<ScheduleGetResponse>> findSchedulesByLoginUser(
+            @SessionAttribute("loginUserId") Long loginUserId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getSchedulesByUser(loginUserId, page, pageSize));
     }
 
     // READ userId가 일치하는 schedule 조회
     @GetMapping("/users/{userId}/schedules")
-    public ResponseEntity<List<ScheduleGetResponse>> findSchedulesByUser(@PathVariable Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getSchedulesByUser(userId));
+    public ResponseEntity<Page<ScheduleGetResponse>> findSchedulesByUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getSchedulesByUser(userId, page, pageSize));
     }
 
     // READ schedule 단일 조회

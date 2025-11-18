@@ -1,12 +1,17 @@
 package com.example.scheduler.domain.schedule.repository;
 
+import com.example.scheduler.domain.comment.entity.Comment;
 import com.example.scheduler.domain.schedule.entity.Schedule;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    List<Schedule> findAllByUserId(Long userId);
+    Page<Schedule> findAllByUserId(Long userId, Pageable pageable);
 
-    List<Schedule> findAllByOrderByModifiedAtDesc();
+    Page<Schedule> findAll(Pageable pageable);
+
+    List<Schedule> findAllByUserId(Long userId);
 }
