@@ -14,7 +14,7 @@ import org.hibernate.annotations.Where;
 @Entity
 @Table(name = "comments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE comments SET deleted_at = NOW() WHERE comments_id = ?")
 @Where(clause = "deleted_at IS NULL")
 public class Comment extends BaseEntity {
 

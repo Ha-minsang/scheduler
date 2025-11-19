@@ -31,16 +31,15 @@ public class UserController {
     // login 로그인
     @PostMapping("/login")
     public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request, HttpSession session) {
-        SessionUser sessionUser = userService.login(request);
-        session.setAttribute("loginUserId", sessionUser.getId());
+        userService.login(request, session);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     // logout 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpSession session) {
-        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) {
+        Long loginUserId = (Long) session.getAttribute("loginUserId");
+        if (loginUserId == null) {
             throw new UserException(NOT_LOGGED_IN);
         }
         session.invalidate();
@@ -50,7 +49,7 @@ public class UserController {
     // READ 전체 user 조회
     @GetMapping("/users")
     public ResponseEntity<Page<UserGetResponse>> getAllUsers(
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ){
         return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsers(page, pageSize));
@@ -81,6 +80,7 @@ public class UserController {
     ) {
         Long loginUserId = (Long) session.getAttribute("loginUserId");
         userService.deleteUser(userId, loginUserId);
+        session.invalidate();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -11,6 +11,7 @@ import com.example.scheduler.domain.schedule.repository.ScheduleRepository;
 import com.example.scheduler.domain.user.dto.*;
 import com.example.scheduler.domain.user.entity.User;
 import com.example.scheduler.domain.user.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,7 +36,10 @@ public class UserService {
 
     // CREATE 새 schedule 저장
     @Transactional
-    public SignupResponse createUser(@Valid @RequestBody SignupRequest request) {
+    public SignupResponse createUser(SignupRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserException(DUPLICATE_USER_EMAIL);
+        }
         User user = new User(
                 request.getUserName(),
                 request.getEmail(),
@@ -46,20 +50,28 @@ public class UserService {
     }
 
     // login 로그인
-    @Transactional(readOnly = true)
-    public SessionUser login(@Valid LoginRequest request) {
+    @Transactional
+    public void login(LoginRequest request, HttpSession session) {
+        if (session.getAttribute("loginUser") != null) {
+            throw new AuthException(DUPLICATE_USER_EMAIL);
+        }
+
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
                 () -> new UserException(NOT_FOUND_USER)
         );
+
         boolean isMatched = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!isMatched) {
             throw new AuthException(AUTH_INVALID_CREDENTIALS);
         }
-        return SessionUser.from(user);
+
+        SessionUser sessionUser = SessionUser.from(user);
+        session.setAttribute("loginUserId", sessionUser.getId());
     }
 
 
     // READ 전체 user 조회
+    @Transactional(readOnly = true)
     public Page<UserGetResponse> getAllUsers(int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("modifiedAt").descending());
         Page<User> users = userRepository.findAll(pageable);
@@ -94,15 +106,14 @@ public class UserService {
         User user = getUserById(userId);
         commentRepository.findAllByUserId(userId).forEach(Comment::softDelete); // 삭제하는 유저가 작성한 comment를 softDelete
         scheduleRepository.findAllByUserId(userId).forEach(Schedule::softDelete); // 삭제하는 유저가 작성한 schedule을 softDelete
-        userRepository.delete(user);
+        user.softDelete();
     }
 
     // userId와 일치하는 user 가져오기
     // userID가 일치하는 일정이 없으면 예외 처리
     private User getUserById(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(
+        return userRepository.findById(userId).orElseThrow(
                 () -> new UserException(NOT_FOUND_USER)
         );
-        return user;
     }
 }

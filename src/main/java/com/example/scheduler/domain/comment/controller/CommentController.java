@@ -33,7 +33,7 @@ public class CommentController {
     @GetMapping("/schedules/{scheduleId}/comments")
     public ResponseEntity<Page<CommentGetResponse>> getComments(
             @PathVariable Long scheduleId,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ){
         return ResponseEntity.status(HttpStatus.OK).body(commentService.getAllCommentsByScheduleId(scheduleId, page, pageSize));

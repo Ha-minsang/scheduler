@@ -76,7 +76,7 @@ public class CommentService {
         Comment comment = getCommentByScheduleAndId(scheduleId, commentId);
         Long userId = comment.getUser().getId();
         authManager.validateAuthorization(loginUserId, userId);
-        commentRepository.delete(comment);
+        comment.softDelete();
     }
 
     // scheduleId가 일치하는 일정을 가져오기, 일치하는 schedule이 없으면 예외처리

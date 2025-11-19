@@ -31,7 +31,7 @@ public class ScheduleController {
     // READ 전체 schedule 조회
     @GetMapping("/schedules")
     public ResponseEntity<Page<ScheduleGetResponse>> getAllSchedules(
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ){
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getAllSchedules(page, pageSize));
@@ -41,7 +41,7 @@ public class ScheduleController {
     @GetMapping("/schedules/my")
     public ResponseEntity<Page<ScheduleGetResponse>> findSchedulesByLoginUser(
             @SessionAttribute("loginUserId") Long loginUserId,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getSchedulesByUser(loginUserId, page, pageSize));
@@ -51,7 +51,7 @@ public class ScheduleController {
     @GetMapping("/users/{userId}/schedules")
     public ResponseEntity<Page<ScheduleGetResponse>> findSchedulesByUser(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getSchedulesByUser(userId, page, pageSize));

@@ -13,7 +13,7 @@ import org.hibernate.annotations.Where;
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE users SET deleted_at = NOW() WHERE users_id = ?")
 @Where(clause = "deleted_at IS NULL")
 public class User extends BaseEntity {
 
@@ -27,7 +27,7 @@ public class User extends BaseEntity {
     private String userName;
 
     // user 이메일
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     @Email
     private String email;
 

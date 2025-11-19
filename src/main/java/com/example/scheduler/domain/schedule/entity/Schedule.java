@@ -13,7 +13,7 @@ import org.hibernate.annotations.Where;
 @Entity
 @Table(name = "schedules")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE schedules SET deleted_at = NOW() WHERE schedules_id = ?")
 @Where(clause = "deleted_at IS NULL")
 public class Schedule extends BaseEntity {
 

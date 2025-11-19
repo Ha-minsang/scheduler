@@ -1,9 +1,11 @@
 package com.example.scheduler.domain.comment.dto;
 
 import com.example.scheduler.domain.comment.entity.Comment;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Getter
 public class CommentCreateResponse {
 
     private final Long id;

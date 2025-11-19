@@ -34,6 +34,7 @@ public class ScheduleService {
     // CREATE 새 schedule 저장
     @Transactional
     public ScheduleCreateResponse createSchedule(@Valid @RequestBody ScheduleCreateRequest request, Long loginUserId) {
+        authManager.validateLogin(loginUserId);
         User user = getUserById(loginUserId);
         Schedule schedule = new Schedule(
                 user,
@@ -49,7 +50,7 @@ public class ScheduleService {
     public Page<ScheduleGetResponse> getAllSchedules(int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("modifiedAt").descending());
         Page<Schedule> schedules = scheduleRepository.findAll(pageable);
-        return schedules.map(ScheduleGetResponse::from);
+        return schedules.map(schedule -> ScheduleGetResponse.from(schedule, commentRepository.countByScheduleId(schedule.getId())));
     }
 
     // READ userId로 해당 userId가 작성한 schedule 조회
@@ -58,14 +59,16 @@ public class ScheduleService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("modifiedAt").descending());
         getUserById(userId); // user 존재 여부 확인용
         Page<Schedule> schedules = scheduleRepository.findAllByUserId(userId, pageable);
-        return schedules.map(ScheduleGetResponse::from);
+
+        return schedules.map(schedule -> ScheduleGetResponse.from(schedule, commentRepository.countByScheduleId(schedule.getId())));
     }
 
     // READ scheduleId로 단일 schedule 조회
     @Transactional(readOnly = true)
     public ScheduleGetResponse getOneSchedule(Long scheduleId) {
         Schedule schedule = getScheduleById(scheduleId);
-        return ScheduleGetResponse.from(schedule);
+        Long commentCount = commentRepository.countByScheduleId(scheduleId);
+        return ScheduleGetResponse.from(schedule, commentCount);
     }
 
     // UPDATE schedule 수정
@@ -88,7 +91,7 @@ public class ScheduleService {
         Long userId = schedule.getUser().getId();
         authManager.validateAuthorization(loginUserId, userId);
         commentRepository.findAllByScheduleId(scheduleId).forEach(Comment::softDelete); // 삭제할 일정에 있는 댓글 먼저 softDelete 진행
-        scheduleRepository.delete(schedule);
+        schedule.softDelete();
     }
 
     // scheduleId가 일치하는 schedule 가져오기
