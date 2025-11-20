@@ -3,6 +3,7 @@ package com.example.scheduler.domain.comment.controller;
 import com.example.scheduler.domain.comment.dto.*;
 import com.example.scheduler.domain.comment.service.CommentService;
 import com.example.scheduler.domain.schedule.dto.ScheduleGetResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,8 +25,9 @@ public class CommentController {
     public ResponseEntity<CommentCreateResponse> createComment(
             @PathVariable Long scheduleId,
             @Valid @RequestBody CommentCreateRequest request,
-            @SessionAttribute("loginUserId") Long loginUserId
+            HttpSession session
     ) {
+        Long loginUserId = (Long) session.getAttribute("loginUserId");
         return ResponseEntity.status(HttpStatus.CREATED).body(commentService.saveComment(scheduleId, loginUserId, request));
     }
 
@@ -51,8 +53,9 @@ public class CommentController {
             @PathVariable Long scheduleId,
             @PathVariable Long commentId,
             @Valid@RequestBody CommentUpdateRequest request,
-            @SessionAttribute("loginUserId") Long loginUserId
+            HttpSession session
     ) {
+        Long loginUserId = (Long) session.getAttribute("loginUserId");
         return ResponseEntity.status(HttpStatus.OK).body(commentService.updateComment(scheduleId, commentId, loginUserId, request));
     }
 
@@ -61,8 +64,9 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(
             @PathVariable Long scheduleId,
             @PathVariable Long commentId,
-            @SessionAttribute("loginUserId") Long loginUserId
+            HttpSession session
     ) {
+        Long loginUserId = (Long) session.getAttribute("loginUserId");
         commentService.deleteComment(scheduleId, commentId, loginUserId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
