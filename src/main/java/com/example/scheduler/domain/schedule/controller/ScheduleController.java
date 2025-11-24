@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class ScheduleController {
 
     // CREATE 새 schedule 저장
     @PostMapping("/schedules")
-    public ResponseEntity<ScheduleCreateResponse>createSchedule(
+    public ResponseEntity<ScheduleCreateResponse> createSchedule(
             @Valid @RequestBody ScheduleCreateRequest request,
             HttpSession session
     ) {
@@ -33,7 +32,7 @@ public class ScheduleController {
     public ResponseEntity<Page<ScheduleGetResponse>> getAllSchedules(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.OK).body(scheduleService.getAllSchedules(page, pageSize));
     }
 

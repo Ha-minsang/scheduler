@@ -1,7 +1,5 @@
 package com.example.scheduler.common.exception;
 
-import org.springframework.http.HttpStatus;
-
 public class CustomException extends RuntimeException {
 
     private final ErrorCode errorCode;

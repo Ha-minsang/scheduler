@@ -3,7 +3,6 @@ package com.example.scheduler.common.dto;
 import com.example.scheduler.common.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 

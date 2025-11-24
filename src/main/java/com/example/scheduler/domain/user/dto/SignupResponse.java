@@ -1,6 +1,5 @@
 package com.example.scheduler.domain.user.dto;
 
-import com.example.scheduler.domain.schedule.entity.Schedule;
 import com.example.scheduler.domain.user.entity.User;
 import lombok.Getter;
 

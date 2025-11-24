@@ -24,8 +24,7 @@ public enum ErrorCode {
     ALREADY_LOGGED_IN(HttpStatus.CONFLICT, "AUTH_004", "이미 로그인이 되어 있습니다."),
 
     // Common 공통 ErrorCode
-    VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "COMMON_001", "요청 값이 올바르지 않습니다: ")
-    ;
+    VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "COMMON_001", "요청 값이 올바르지 않습니다: ");
 
     private final HttpStatus status;
     private final String code;

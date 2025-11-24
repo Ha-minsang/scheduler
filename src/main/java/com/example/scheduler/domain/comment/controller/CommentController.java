@@ -2,7 +2,6 @@ package com.example.scheduler.domain.comment.controller;
 
 import com.example.scheduler.domain.comment.dto.*;
 import com.example.scheduler.domain.comment.service.CommentService;
-import com.example.scheduler.domain.schedule.dto.ScheduleGetResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,7 +34,7 @@ public class CommentController {
             @PathVariable Long scheduleId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.OK).body(commentService.getAllCommentsByScheduleId(scheduleId, page, pageSize));
     }
 
@@ -52,7 +49,7 @@ public class CommentController {
     public ResponseEntity<CommentUpdateResponse> updateSchedule(
             @PathVariable Long scheduleId,
             @PathVariable Long commentId,
-            @Valid@RequestBody CommentUpdateRequest request,
+            @Valid @RequestBody CommentUpdateRequest request,
             HttpSession session
     ) {
         Long loginUserId = (Long) session.getAttribute("loginUserId");
